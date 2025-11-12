@@ -1,0 +1,111 @@
+دليل سريع: تشغيل المشروع محلياً واستخدام Postman + كيفية مشاركة المشروع مع العميل
+
+الجزء الأول — تشغيل المشروع محلياً
+1) المتطلبات:
+   - .NET SDK (8/9 حسب تثبيتك) مثبت على الجهاز
+   - Postman مثبت لاختبار الـ API
+
+2) تشغيل المشروع من سطر الأوامر:
+   - افتح PowerShell في المجلد:
+     C:\Users\Asmael\Desktop\sugo\SugoBackend
+
+   - استعد الحزم (مرة واحدة أو عند التغيير):
+     dotnet restore
+
+   - لتشغيل التطبيق محلياً (يربط المنافذ 5001/5000):
+     dotnet run --urls "https://localhost:5001;http://localhost:5000"
+
+   - بعد التشغيل ستجد مخرجات تفيد أن التطبيق يستمع على:
+     https://localhost:5001
+     http://localhost:5000
+
+   - افتح Swagger للتأكد من أن الـ API شغالة:
+     https://localhost:5001/swagger
+
+ملاحظة شهادة HTTPS: إذا واجهت مشاكل بشهادة HTTPS في Postman استخدم http://localhost:5000 أو عطّل التحقق من الشهادات في إعدادات Postman (Settings → General → SSL certificate verification = OFF).
+
+
+الجزء الثاني — استيراد الاختبارات إلى Postman وتشغيلها
+1) استيراد الـ Collection:
+   - افتح Postman → File → Import → اختر الملف: SugoBackend.postman_collection.json
+
+2) إنشاء Environment جديد:
+   - Manage Environments → Add
+     - Name: Sugo Backend
+     - Variables:
+       - baseUrl = https://localhost:5001   (أو http://localhost:5000 لو تفضل)
+       - token =
+       - userId =
+       - roomId =
+     - Save ثم حدد هذا الـ environment من شريط Postman
+
+3) خطوات اختبار الـ API (ترتيب مقترَح):
+   - Auth → Register: أرسل بيانات (username, email, password)
+   - Auth → Login: أرسل (email, password) ستحصل على JSON يحتوي على الحقل token
+   - انسخ قيمة الـ token وضعها في متغير environment (token)
+     أو ضمّنها في Header: Authorization = Bearer {{token}}
+   - اختبر الآن:
+     - Users → Get Profile (استخدم {{userId}})
+     - Rooms → Create Room (يجب أن يرجع 201)
+     - Rooms → List Rooms
+
+4) إن أردت حفظ المتغيرات تلقائياً
+   - في Collection توجد اختبارات (scripts) تحاول تخزين userId و token في المتغيرات عندما يكون جواب الطلب ناجح.
+   - تأكد أن الـ environment المستخدَم هو نفسه الذي تحفظ فيه المتغيرات.
+
+
+الجزء الثالث — كيفية مشاركة المشروع مع العميل (تسليم)
+خيارات مشاركة:
+A) إرسال مجلد المشروع مضغوطاً (ZIP)
+   - نصيحتي: أرسل ملف مضغوط يحتوي على:
+     - المجلد الكامل `SugoBackend/` (مصدر المشروع)
+     - `SugoBackend.postman_collection.json` (ملف Postman collection)
+     - `README.md` و `Postman_INSTRUCTIONS.txt` (هذا الملف)
+     - (اختياري) ملف `sugo.db` إذا أردت أن ترسل قاعدة بيانات مملوءة ببيانات اختبار
+     - (اختياري) ملفات Migrations إذا أردت الاحتفاظ بتاريخ الميرجرشن
+   - قبل الإرسال: استبدل أو أحذف أي أسرار من `appsettings.json` (مثل Jwt:Key) أو ضع ملفًا appsettings.Production.json مختلفًا بدون مفاتيح سرية.
+
+   - كيفية إنشاء الأرشيف على نظام Windows (PowerShell):
+     Compress-Archive -Path .\SugoBackend -DestinationPath .\SugoBackend.zip
+
+B) نشر API على استضافة (مثال: Azure App Service) ومشاركة URL للعميل
+   - خطوات سريعة للنشر عبر dotnet publish + رفع ملفات إلى الخادم أو استخدام Azure:
+     1. نشر محليًا إلى مجلد النشر:
+        dotnet publish -c Release -o ./publish
+     2. ارفع محتوى مجلد `publish` إلى الخادم (FTP / ZIP deploy / Docker / Azure)
+     3. تأكد من ضبط متغيرات البيئة على الخادم (ConnectionStrings, Jwt:Key, Jwt:Issuer/Audience) بدلاً من appsettings.json
+   - بعد النشر ستحصل على URL عام (مثلاً https://api.yourdomain.com) يمكنك مشاركته مع العميل.
+
+C) مشاركة Postman collection + Environment فقط
+   - إذا أردت أن يجرّب العميل API محلياً بنفسه، أرسِل:
+     - `SugoBackend.postman_collection.json`
+     - ملف بيئة Postman (Export environment) أو أعطه تعليمات ضبط القيم (baseUrl, token)
+   - كيف يُصدر العميل Environment من Postman: Manage Environments → اختر → Export
+
+
+الجزء الرابع — أي ملفات أشارك مع العميل بالضبط؟
+قائمة مقترحة (مرتبطة بحالة الاستخدام):
+1. SugoBackend.zip (أو المجلد المضغوط) — يحتوي على كل الشيفرة المصدرية وملفات المشروع
+2. SugoBackend.postman_collection.json — ملف يجمع كل الطلبات المعدّة
+3. README.md — تعليمات التشغيل العامة
+4. Postman_INSTRUCTIONS.txt — هذا الملف يشرح خطوات Postman بالتفصيل
+5. (اختياري) sugo.db — ملف قاعدة البيانات إذا أردت أن يتلقى العميل بيانات اختبار جاهزة
+6. (اختياري) ملف launchSettings.json أو أي إعدادات خاصة
+
+ملاحظة أمنيّة مهمة: لا تشارك مفتاح JWT السري (Jwt:Key) أو أي أسرار حقيقية في ملفات تُرسل عبر البريد. إذا كان لابد من مشاركة إعدادات خاصة بالعميل، امنحهم تعليمات لوضع متغيرات البيئة على جهازهم أو على الخادم.
+
+
+الجزء الخامس — خطوات سريعة لوصول العميل لتشغيل المشروع بعد استلام الملفات
+1. فك ضغط `SugoBackend.zip`
+2. فتح PowerShell في المجلد وفعل:
+   dotnet restore
+   dotnet ef database update   # (إن أردت إنشاء قاعدة بيانات محلية)
+   dotnet run --urls "https://localhost:5001;http://localhost:5000"
+3. في Postman استيراد `SugoBackend.postman_collection.json` وإنشاء Environment كما في الشرح
+
+
+الختام
+- إذا تحب أقدر أجهز لك ملف ZIP جاهز للتسليم الآن يحتوي على الشيفرة والـ Postman collection وملف التعليمات. 
+- لو حابب أنشر API على Azure أو أي منصة، أقدر أساعدك في خطوات النشر وتعديل الإعدادات.
+
+أخبرني ماذا تفضّل: أجهز ZIP مع الملفات المطلوبة أم أشرح لك بالتفصيل خطوات نشره على Azure / VPS؟

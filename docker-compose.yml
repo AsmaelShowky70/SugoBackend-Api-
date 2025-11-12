@@ -1,0 +1,76 @@
+version: '3.8'
+
+services:
+  # SugoBackend API
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: sugo-api
+    ports:
+      - "5000:5000"
+      - "5001:5001"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_URLS=http://+:5000;https://+:5001
+      - ConnectionStrings__DefaultConnection=Server=db,1433;Database=sugo_db;User Id=sa;Password=${DB_PASSWORD:-SugoPassword123!};Encrypt=false
+      - Jwt__Key=${JWT_KEY:-aK8#mP9@xL2$vQ1%rT4&sW5!nE6^jH7*CHANGE_ME}
+      - Jwt__Issuer=SugoBackend
+      - Jwt__Audience=SugoFrontend
+      - Jwt__ExpiryInMinutes=60
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - sugo-network
+    restart: unless-stopped
+
+  # SQL Server Database
+  db:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: sugo-db
+    environment:
+      SA_PASSWORD: ${DB_PASSWORD:-SugoPassword123!}
+      ACCEPT_EULA: "Y"
+    ports:
+      - "1433:1433"
+    volumes:
+      - sqldata:/var/opt/mssql
+    networks:
+      - sugo-network
+    healthcheck:
+      test: [ "CMD", "/opt/mssql-tools/bin/sqlcmd", "-S", "localhost", "-U", "sa", "-P", "SugoPassword123!", "-Q", "SELECT 1" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    restart: unless-stopped
+
+volumes:
+  sqldata:
+    driver: local
+
+networks:
+  sugo-network:
+    driver: bridge
+
+# Usage:
+# 1. Create a .env file with variables:
+#    DB_PASSWORD=YourStrongPassword123!
+#    JWT_KEY=YourSecureKeyAtLeast32CharactersLong
+#
+# 2. Run:
+#    docker-compose up -d
+#
+# 3. Check logs:
+#    docker-compose logs -f api
+#
+# 4. Access API:
+#    Swagger: http://localhost:5000/swagger
+#    API: http://localhost:5000
+#
+# 5. Stop:
+#    docker-compose down
+#
+# 6. Cleanup everything:
+#    docker-compose down -v
