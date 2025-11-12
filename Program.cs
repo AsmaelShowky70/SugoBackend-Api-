@@ -7,6 +7,25 @@ using SugoBackend.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// IMPORTANT: On some hosts (Railway, Heroku, etc.) the developer HTTPS certificate
+// is not available. These platforms typically terminate TLS at a proxy and provide
+// a PORT environment variable for HTTP only. To avoid Kestrel failing when an
+// HTTPS URL is present but no certificate is configured, prefer binding to HTTP
+// on the provided PORT unless a certificate is explicitly configured.
+{
+    var aspnetcoreUrls = Environment.GetEnvironmentVariable("ASPNETCORE_URLS");
+    var certPath = builder.Configuration["Kestrel:Certificates:Default:Path"]
+                   ?? Environment.GetEnvironmentVariable("ASPNETCORE_Kestrel__Certificates__Default__Path");
+    var portEnv = Environment.GetEnvironmentVariable("PORT") ?? "5000";
+
+    if (!string.IsNullOrEmpty(aspnetcoreUrls) && aspnetcoreUrls.IndexOf("https", StringComparison.OrdinalIgnoreCase) >= 0 && string.IsNullOrEmpty(certPath))
+    {
+        // Override to HTTP-only binding on the platform port to avoid HTTPS certificate errors
+        // when no cert is present (common on Railway). This makes the app more robust in PaaS.
+        builder.WebHost.UseUrls($"http://*:{portEnv}");
+    }
+}
+
 #region Services Configuration
 
 // Database
