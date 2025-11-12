@@ -33,7 +33,7 @@ var builder = WebApplication.CreateBuilder(args);
     {
         // Back-compat: if ASPNETCORE_URLS explicitly contained https but there's no cert,
         // fall back to the platform port if present, otherwise default to 5000.
-        var p = portEnv ?? "5000";
+        var p = portEnv ?? "8080";
         builder.WebHost.UseUrls($"http://*:{p}");
     }
 }
