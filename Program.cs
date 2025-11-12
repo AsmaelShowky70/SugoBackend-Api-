@@ -1,4 +1,5 @@
 using System.Text;
+using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Http;
@@ -40,8 +41,49 @@ var builder = WebApplication.CreateBuilder(args);
 #region Services Configuration
 
 // Database
-builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+// Prefer a platform-provided DATABASE_URL (Neon/Render) and fall back to appsettings.
+var configuredConn = Environment.GetEnvironmentVariable("DATABASE_URL");
+if (string.IsNullOrEmpty(configuredConn))
+{
+    configuredConn = builder.Configuration.GetConnectionString("DefaultConnection");
+}
+
+// If the connection string is a Postgres URI (postgres:// or postgresql://), convert
+// it into a key=value connection string suitable for Npgsql/EF Core.
+string ResolveConnectionString(string conn)
+{
+    if (string.IsNullOrEmpty(conn)) return conn!;
+    if (conn.StartsWith("postgres://", StringComparison.OrdinalIgnoreCase) || conn.StartsWith("postgresql://", StringComparison.OrdinalIgnoreCase))
+    {
+        var uri = new Uri(conn);
+        var userInfo = uri.UserInfo.Split(':');
+        var username = Uri.UnescapeDataString(userInfo[0]);
+        var password = userInfo.Length > 1 ? Uri.UnescapeDataString(userInfo[1]) : string.Empty;
+        var host = uri.Host;
+        var port = uri.Port > 0 ? uri.Port : 5432;
+        var database = uri.AbsolutePath?.TrimStart('/') ?? string.Empty;
+
+        // Default SSL mode is Require for Neon/Render
+        var sslMode = "Require";
+        if (!string.IsNullOrEmpty(uri.Query))
+        {
+            var q = uri.Query.TrimStart('?');
+            var m = Regex.Match(q, "sslmode=([^&]+)", RegexOptions.IgnoreCase);
+            if (m.Success)
+            {
+                sslMode = m.Groups[1].Value;
+            }
+        }
+
+        var builderStr = $"Host={host};Port={port};Username={username};Password={password};Database={database};Ssl Mode={sslMode};";
+        return builderStr;
+    }
+
+    return conn;
+}
+
+var finalConn = ResolveConnectionString(configuredConn ?? string.Empty);
+builder.Services.AddDbContext<AppDbContext>(options => options.UseNpgsql(finalConn));
 
 // Authentication & Authorization
 var jwtKey = builder.Configuration["Jwt:Key"];
