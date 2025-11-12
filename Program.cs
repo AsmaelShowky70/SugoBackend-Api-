@@ -1,6 +1,7 @@
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.HttpOverrides;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using SugoBackend.Data;
@@ -133,13 +134,31 @@ builder.Services.AddScoped<ITokenService, TokenService>();
 
 var app = builder.Build();
 
+// Track whether startup tasks (like DB migration) succeeded so health checks can report accurately
+var startupOk = false;
+
 #region Middleware Configuration
 
-// Apply migrations and seed database
+// Apply migrations and seed database (wrapped in try/catch so the app can start and
+// report useful logs instead of crashing the process in PaaS environments).
 using (var scope = app.Services.CreateScope())
 {
-    var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    dbContext.Database.Migrate();
+    var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+    try
+    {
+        var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        dbContext.Database.Migrate();
+        startupOk = true;
+        logger.LogInformation("Database migrations applied successfully.");
+    }
+    catch (Exception ex)
+    {
+        // Log the exception and keep the app running. On platforms like Railway,
+        // this prevents the host from reporting a generic "failed to respond" and
+        // gives us actionable logs.
+        logger.LogError(ex, "Failed to apply database migrations during startup.");
+        startupOk = false;
+    }
 }
 
 // Swagger UI
@@ -151,7 +170,7 @@ app.UseSwaggerUI(c =>
 });
 
 
-app.UseHttpsRedirection();
+// app.UseHttpsRedirection();
 
 // CORS
 app.UseCors("AllowAll");
@@ -176,7 +195,18 @@ app.UseAuthorization();
 app.MapControllers();
 app.MapGet("/", () => Results.Redirect("/swagger"));
 // Lightweight health endpoint for PaaS health checks
-app.MapGet("/health", () => Results.Json(new { status = "Healthy", timestamp = DateTime.UtcNow }));
+app.MapGet("/health", (ILogger<Program> logger) =>
+{
+    if (startupOk)
+    {
+        return Results.Json(new { status = "Healthy", timestamp = DateTime.UtcNow });
+    }
+    else
+    {
+        logger.LogWarning("Health check: startup tasks did not complete successfully.");
+        return Results.Json(new { status = "Unhealthy", timestamp = DateTime.UtcNow, reason = "Startup tasks failed (check logs)" }, statusCode: StatusCodes.Status503ServiceUnavailable);
+    }
+});
 
 #endregion
 
