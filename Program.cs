@@ -1,5 +1,6 @@
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using SugoBackend.Data;
@@ -16,13 +17,22 @@ var builder = WebApplication.CreateBuilder(args);
     var aspnetcoreUrls = Environment.GetEnvironmentVariable("ASPNETCORE_URLS");
     var certPath = builder.Configuration["Kestrel:Certificates:Default:Path"]
                    ?? Environment.GetEnvironmentVariable("ASPNETCORE_Kestrel__Certificates__Default__Path");
-    var portEnv = Environment.GetEnvironmentVariable("PORT") ?? "5000";
+    var portEnv = Environment.GetEnvironmentVariable("PORT");
 
-    if (!string.IsNullOrEmpty(aspnetcoreUrls) && aspnetcoreUrls.IndexOf("https", StringComparison.OrdinalIgnoreCase) >= 0 && string.IsNullOrEmpty(certPath))
+    // If the platform provided a PORT env (typical on Railway, Heroku, etc.) and no
+    // Kestrel certificate is configured, force the app to bind to HTTP on that port.
+    // This ensures the runtime listens where the platform's proxy expects it and
+    // avoids 502/HTTPS configuration errors when a cert isn't available.
+    if (!string.IsNullOrEmpty(portEnv) && string.IsNullOrEmpty(certPath))
     {
-        // Override to HTTP-only binding on the platform port to avoid HTTPS certificate errors
-        // when no cert is present (common on Railway). This makes the app more robust in PaaS.
         builder.WebHost.UseUrls($"http://*:{portEnv}");
+    }
+    else if (!string.IsNullOrEmpty(aspnetcoreUrls) && aspnetcoreUrls.IndexOf("https", StringComparison.OrdinalIgnoreCase) >= 0 && string.IsNullOrEmpty(certPath))
+    {
+        // Back-compat: if ASPNETCORE_URLS explicitly contained https but there's no cert,
+        // fall back to the platform port if present, otherwise default to 5000.
+        var p = portEnv ?? "5000";
+        builder.WebHost.UseUrls($"http://*:{p}");
     }
 }
 
@@ -148,11 +158,27 @@ app.UseHttpsRedirection();
 // CORS
 app.UseCors("AllowAll");
 
+// Honor proxy headers (X-Forwarded-For, X-Forwarded-Proto) when running behind
+// a reverse proxy / PaaS (Railway, Heroku, etc.).
+// NOTE: We clear KnownNetworks and KnownProxies so that the headers are accepted
+// from the platform proxy. If you have a stricter network setup, restrict these.
+app.UseForwardedHeaders(new ForwardedHeadersOptions
+{
+    ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto,
+    // Accept forwarded headers from any proxy (common in PaaS). For higher security,
+    // populate KnownNetworks or KnownProxies instead of clearing.
+    KnownNetworks = { },
+    KnownProxies = { }
+});
+
 // Authentication & Authorization
 app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+
+// Lightweight health endpoint for PaaS health checks
+app.MapGet("/health", () => Results.Json(new { status = "Healthy", timestamp = DateTime.UtcNow }));
 
 #endregion
 
