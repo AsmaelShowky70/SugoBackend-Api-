@@ -143,15 +143,13 @@ using (var scope = app.Services.CreateScope())
 }
 
 // Swagger UI
-if (app.Environment.IsDevelopment())
+app.UseSwagger();
+app.UseSwaggerUI(c =>
 {
-    app.UseSwagger();
-    app.UseSwaggerUI(c =>
-    {
-        c.SwaggerEndpoint("/swagger/v1/swagger.json", "Sugo Backend API v1.0");
-        c.RoutePrefix = "swagger";
-    });
-}
+    c.SwaggerEndpoint("/swagger/v1/swagger.json", "Sugo Backend API v1.0");
+    c.RoutePrefix = "swagger";
+});
+
 
 app.UseHttpsRedirection();
 
@@ -176,7 +174,7 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
-
+app.MapGet("/", () => Results.Redirect("/swagger"));
 // Lightweight health endpoint for PaaS health checks
 app.MapGet("/health", () => Results.Json(new { status = "Healthy", timestamp = DateTime.UtcNow }));
 
