@@ -8,15 +8,15 @@ services:
       dockerfile: Dockerfile
     container_name: sugo-api
     ports:
-      - "${PORT:-8080}:${PORT:-8080}"
+      - "${PORT:-5000}:${PORT:-5000}"
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
       # Use the platform-provided PORT. For local docker-compose runs you can
-      # define PORT in a .env file (default 8080). In PaaS (Railway) the service
+      # define PORT in a .env file (default 5000). In PaaS (Railway) the service
       # will set PORT automatically. Bind to HTTP only inside the container; TLS
       # termination is expected to be handled by the platform proxy.
-      - PORT=${PORT:-8080}
-      - ASPNETCORE_URLS=http://*:${PORT:-8080}
+      - PORT=${PORT:-5000}
+      - ASPNETCORE_URLS=http://*:${PORT:-5000}
       - ConnectionStrings__DefaultConnection=Host=db;Port=5432;Database=sugo;Username=postgres;Password=${DB_PASSWORD:-postgres}
       - Jwt__Key=${JWT_KEY:-aK8#mP9@xL2$vQ1%rT4&sW5!nE6^jH7*CHANGE_ME}
       - Jwt__Issuer=SugoBackend
@@ -71,8 +71,8 @@ networks:
 #    docker-compose logs -f api
 #
 # 4. Access API:
-#    Swagger: http://localhost:8080/swagger
-#    API: http://localhost:8080
+#    Swagger: http://localhost:5000/swagger
+#    API: http://localhost:5000
 #
 # 5. Stop:
 #    docker-compose down

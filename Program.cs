@@ -33,7 +33,7 @@ var builder = WebApplication.CreateBuilder(args);
     {
         // Back-compat: if ASPNETCORE_URLS explicitly contained https but there's no cert,
         // fall back to the platform port if present, otherwise default to 5000.
-        var p = portEnv ?? "8080";
+        var p = portEnv ?? "5000";
         builder.WebHost.UseUrls($"http://*:{p}");
     }
 }
@@ -82,7 +82,7 @@ string ResolveConnectionString(string conn)
     return conn;
 }
 
-var finalConn = ResolveConnectionString(configuredConn ?? string.Empty);
+var finalConn = ResolveConnectionString(configuredConn);
 builder.Services.AddDbContext<AppDbContext>(options => options.UseNpgsql(finalConn));
 
 // Authentication & Authorization
