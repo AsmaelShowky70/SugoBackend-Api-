@@ -115,10 +115,18 @@ app.UseMiddleware<ExceptionMiddleware>();
 // استخدام ضغط الاستجابة
 app.UseResponseCompression();
 
+// تمكين Swagger دائماً (لأغراض الاختبار في الإنتاج)
+app.UseSwagger();
+app.UseSwaggerUI(c =>
+{
+    c.SwaggerEndpoint("/swagger/v1/swagger.json", "SugoBackend API v1");
+    c.RoutePrefix = "swagger"; // الوصول عبر /swagger
+});
+
 if (app.Environment.IsDevelopment())
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
+    // app.UseSwagger();
+    // app.UseSwaggerUI();
     // في بيئة التطوير المحلية قد نحتاج HTTPS
     // app.UseHttpsRedirection();
 }
@@ -150,5 +158,14 @@ app.MapGet("/health", async (AppDbContext db) =>
         return Results.Json(new { status = "error", database = "exception", error = ex.Message }, statusCode: 503);
     }
 });
+
+// مسار رئيسي ترحيبي
+app.MapGet("/", () => Results.Ok(new
+{
+    message = "Welcome to SugoBackend API",
+    status = "Running",
+    docs = "/swagger",
+    health = "/health"
+}));
 
 app.Run();
