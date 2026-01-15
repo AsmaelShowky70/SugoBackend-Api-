@@ -6,7 +6,8 @@ using Microsoft.IdentityModel.Tokens;
 using SugoBackend.Data; // افترض أن هذا هو namespace الخاص بـ DbContext
 using SugoBackend.Services; // افترض أن هذا هو namespace الخاص بـ TokenService
 using Npgsql.EntityFrameworkCore.PostgreSQL;
-
+using SugoBackend.Middleware; // إضافة الـ Namespace الجديد
+using Microsoft.AspNetCore.ResponseCompression; // لضغط الاستجابة
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -26,6 +27,12 @@ builder.Services.Configure<ForwardedHeadersOptions>(options =>
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+// إضافة Response Compression
+builder.Services.AddResponseCompression(options =>
+{
+    options.EnableForHttps = true;
+});
 
 var isDevelopment = builder.Environment.IsDevelopment();
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
@@ -101,6 +108,12 @@ var app = builder.Build();
 // استخدام Forwarded Headers أولاً
 app.UseForwardedHeaders();
 
+// استخدام Middleware معالجة الأخطاء الشاملة
+app.UseMiddleware<ExceptionMiddleware>();
+
+// استخدام ضغط الاستجابة
+app.UseResponseCompression();
+
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -116,5 +129,25 @@ app.UseCors("AllowSpecificOrigin"); // استخدام سياسة CORS المحد
 app.UseAuthentication(); // المصادقة أولاً
 app.UseAuthorization(); // ثم التفويض
 app.MapControllers();
-app.MapGet("/health", () => Results.Json(new { status = "ok" }));
+
+// تحديث فحص الصحة ليشمل قاعدة البيانات
+app.MapGet("/health", async (AppDbContext db) =>
+{
+    try
+    {
+        if (await db.Database.CanConnectAsync())
+        {
+            return Results.Json(new { status = "ok", database = "connected" });
+        }
+        else
+        {
+            return Results.Json(new { status = "error", database = "disconnected" }, statusCode: 503);
+        }
+    }
+    catch (Exception ex)
+    {
+        return Results.Json(new { status = "error", database = "exception", error = ex.Message }, statusCode: 503);
+    }
+});
+
 app.Run();
