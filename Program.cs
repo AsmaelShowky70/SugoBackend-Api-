@@ -17,9 +17,10 @@ builder.Services.Configure<ForwardedHeadersOptions>(options =>
 {
     options.ForwardedHeaders =
         ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
-    // في بعض الحالات، قد تحتاج إلى مسح الشبكات المعروفة إذا كان الخادم الوسيط على شبكة خاصة
-    // options.KnownNetworks.Clear();
-    // options.KnownProxies.Clear();
+
+    // مهم جداً لـ Railway: مسح الشبكات والبروكسيات المعروفة للوثوق بكل شيء
+    options.KnownNetworks.Clear();
+    options.KnownProxies.Clear();
 });
 
 // --- 2. إضافة الخدمات إلى الحاوية (Services to the container) ---
