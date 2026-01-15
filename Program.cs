@@ -105,9 +105,13 @@ if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
+    // في بيئة التطوير المحلية قد نحتاج HTTPS
+    // app.UseHttpsRedirection();
 }
 
-app.UseHttpsRedirection();
+// في بيئة الإنتاج خلف Railway Proxy، يتم إنهاء SSL في الخارج،
+// لذا لا نحتاج لإجبار HTTPS داخل الحاوية لأن الاتصال الداخلي HTTP.
+// app.UseHttpsRedirection();
 app.UseCors("AllowSpecificOrigin"); // استخدام سياسة CORS المحددة
 app.UseAuthentication(); // المصادقة أولاً
 app.UseAuthorization(); // ثم التفويض
