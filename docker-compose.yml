@@ -1,0 +1,81 @@
+version: '3.8'
+
+services:
+  # SugoBackend API
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: sugo-api
+    ports:
+      - "${PORT:-5000}:${PORT:-5000}"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      # Use the platform-provided PORT. For local docker-compose runs you can
+      # define PORT in a .env file (default 5000). In PaaS (Railway) the service
+      # will set PORT automatically. Bind to HTTP only inside the container; TLS
+      # termination is expected to be handled by the platform proxy.
+      - PORT=${PORT:-5000}
+      - ASPNETCORE_URLS=http://*:${PORT:-5000}
+      - ConnectionStrings__DefaultConnection=Host=db;Port=5432;Database=sugo;Username=postgres;Password=${DB_PASSWORD:-postgres}
+      - Jwt__Key=${JWT_KEY:-aK8#mP9@xL2$vQ1%rT4&sW5!nE6^jH7*CHANGE_ME}
+      - Jwt__Issuer=SugoBackend
+      - Jwt__Audience=SugoFrontend
+      - Jwt__ExpiryInMinutes=60
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - sugo-network
+    restart: unless-stopped
+
+  # PostgreSQL Database
+  db:
+    image: postgres:16-alpine
+    container_name: sugo-db
+    environment:
+      POSTGRES_DB: sugo
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - sugo-network
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    restart: unless-stopped
+
+volumes:
+  pgdata:
+    driver: local
+
+networks:
+  sugo-network:
+    driver: bridge
+
+# Usage:
+# 1. Create a .env file with variables:
+#    DB_PASSWORD=YourStrongPassword123!
+#    JWT_KEY=YourSecureKeyAtLeast32CharactersLong
+#
+# 2. Run:
+#    docker-compose up -d
+#
+# 3. Check logs:
+#    docker-compose logs -f api
+#
+# 4. Access API:
+#    Swagger: http://localhost:5000/swagger
+#    API: http://localhost:5000
+#
+# 5. Stop:
+#    docker-compose down
+#
+# 6. Cleanup everything:
+#    docker-compose down -v

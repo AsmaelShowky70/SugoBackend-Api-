@@ -1,0 +1,67 @@
+# Build results
+bin/
+obj/
+*.dll
+*.exe
+*.pdb
+*.runtimeconfig.json
+
+# User-specific files
+.vs/
+.vscode/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# IDE
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Dependencies
+packages/
+!.nuget/packages/feed
+
+# Publishing
+publish/
+PublishProfiles/
+
+# Secrets and environment
+.env
+.env.local
+.env.*.local
+appsettings.local.json
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# Logs
+logs/
+*.log
+
+# Cache
+.cache/
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# NuGet
+*.nupkg
+*.snupkg
+
+# Docker
+.dockerignore
+
+# Coverage
+coverage/
+*.coverage
+
+# Test results
+TestResults/
