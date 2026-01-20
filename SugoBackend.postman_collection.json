@@ -239,28 +239,26 @@
             "key": "token",
             "value": "",
             "type": "string"
+        },
+        {
+            "key": "userId",
+            "value": "",
+            "type": "string"
+        },
+        {
+            "key": "roomId",
+            "value": "",
+            "type": "string"
+        },
+        {
+            "key": "username",
+            "value": "",
+            "type": "string"
+        },
+        {
+            "key": "email",
+            "value": "",
+            "type": "string"
         }
     ]
-},
-{
-    "key": "userId",
-    "value": "",
-    "type": "string"
-},
-{
-    "key": "roomId",
-    "value": "",
-    "type": "string"
-},
-{
-    "key": "username",
-    "value": "",
-    "type": "string"
-},
-{
-    "key": "email",
-    "value": "",
-    "type": "string"
-}
-]
 }
