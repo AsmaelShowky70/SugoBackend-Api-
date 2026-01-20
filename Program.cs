@@ -136,7 +136,18 @@ app.MapGet("/health", async (AppDbContext db) =>
         }
         else
         {
-            return Results.Json(new { status = "error", database = "disconnected" }, statusCode: 503);
+            // محاولة فتح الاتصال يدوياً لالتقاط الخطأ الحقيقي
+            // لأن CanConnectAsync يعود بـ false فقط دون تفاصيل
+            try
+            {
+                await db.Database.OpenConnectionAsync();
+                await db.Database.CloseConnectionAsync();
+                 return Results.Json(new { status = "ok", database = "connected_retry" });
+            }
+            catch (Exception ex)
+            {
+                 return Results.Json(new { status = "error", database = "disconnected", error = ex.Message }, statusCode: 503);
+            }
         }
     }
     catch (Exception ex)
