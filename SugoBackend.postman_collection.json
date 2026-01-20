@@ -232,33 +232,35 @@
     "variable": [
         {
             "key": "baseUrl",
-            "value": "https://localhost:5001",
+            "value": "https://sugobackend-api-production.up.railway.app",
             "type": "string"
         },
         {
             "key": "token",
             "value": "",
             "type": "string"
-        },
-        {
-            "key": "userId",
-            "value": "",
-            "type": "string"
-        },
-        {
-            "key": "roomId",
-            "value": "",
-            "type": "string"
-        },
-        {
-            "key": "username",
-            "value": "",
-            "type": "string"
-        },
-        {
-            "key": "email",
-            "value": "",
-            "type": "string"
         }
     ]
+},
+{
+    "key": "userId",
+    "value": "",
+    "type": "string"
+},
+{
+    "key": "roomId",
+    "value": "",
+    "type": "string"
+},
+{
+    "key": "username",
+    "value": "",
+    "type": "string"
+},
+{
+    "key": "email",
+    "value": "",
+    "type": "string"
+}
+]
 }
