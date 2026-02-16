@@ -1,264 +1,651 @@
 {
-    "info": {
-        "_postman_id": "sugo-backend-api-collection",
-        "name": "Sugo Backend API",
-        "description": "Complete API collection for Sugo Backend with Authentication, Users, and Rooms endpoints",
-        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
-    },
-    "auth": {
-        "type": "bearer",
-        "bearer": [
-            {
-                "key": "token",
-                "value": "{{token}}",
-                "type": "string"
-            }
-        ]
-    },
-    "item": [
-        {
-            "name": "Auth",
-            "description": "Authentication endpoints",
-            "item": [
-                {
-                    "name": "Register",
-                    "event": [
-                        {
-                            "listen": "test",
-                            "script": {
-                                "exec": [
-                                    "if (pm.response.code === 200) {",
-                                    "    pm.environment.set(\"userId\", pm.response.json().userId);",
-                                    "}"
-                                ]
-                            }
-                        }
-                    ],
-                    "request": {
-                        "method": "POST",
-                        "header": [
-                            {
-                                "key": "Content-Type",
-                                "value": "application/json"
-                            }
-                        ],
-                        "body": {
-                            "mode": "raw",
-                            "raw": "{\n  \"username\": \"john_doe\",\n  \"email\": \"john.doe@example.com\",\n  \"password\": \"SecurePassword123!\"\n}"
-                        },
-                        "url": {
-                            "raw": "{{baseUrl}}/api/auth/register",
-                            "host": [
-                                "{{baseUrl}}"
-                            ],
-                            "path": [
-                                "api",
-                                "auth",
-                                "register"
-                            ]
-                        }
-                    },
-                    "response": []
-                },
-                {
-                    "name": "Login",
-                    "event": [
-                        {
-                            "listen": "test",
-                            "script": {
-                                "exec": [
-                                    "if (pm.response.code === 200) {",
-                                    "    var jsonData = pm.response.json();",
-                                    "    pm.environment.set(\"token\", jsonData.token);",
-                                    "    pm.environment.set(\"userId\", jsonData.userId);",
-                                    "    pm.environment.set(\"username\", jsonData.username);",
-                                    "    pm.environment.set(\"email\", jsonData.email);",
-                                    "}"
-                                ]
-                            }
-                        }
-                    ],
-                    "request": {
-                        "method": "POST",
-                        "header": [
-                            {
-                                "key": "Content-Type",
-                                "value": "application/json"
-                            }
-                        ],
-                        "body": {
-                            "mode": "raw",
-                            "raw": "{\n  \"email\": \"john.doe@example.com\",\n  \"password\": \"SecurePassword123!\"\n}"
-                        },
-                        "url": {
-                            "raw": "{{baseUrl}}/api/auth/login",
-                            "host": [
-                                "{{baseUrl}}"
-                            ],
-                            "path": [
-                                "api",
-                                "auth",
-                                "login"
-                            ]
-                        }
-                    },
-                    "response": []
-                }
-            ]
-        },
-        {
-            "name": "Users",
-            "description": "User management endpoints",
-            "item": [
-                {
-                    "name": "Get Profile",
-                    "request": {
-                        "auth": {
-                            "type": "bearer",
-                            "bearer": [
-                                {
-                                    "key": "token",
-                                    "value": "{{token}}",
-                                    "type": "string"
-                                }
-                            ]
-                        },
-                        "method": "GET",
-                        "header": [],
-                        "url": {
-                            "raw": "{{baseUrl}}/api/users/profile/{{userId}}",
-                            "host": [
-                                "{{baseUrl}}"
-                            ],
-                            "path": [
-                                "api",
-                                "users",
-                                "profile",
-                                "{{userId}}"
-                            ]
-                        }
-                    },
-                    "response": []
-                }
-            ]
-        },
-        {
-            "name": "Rooms",
-            "description": "Chat room management endpoints",
-            "item": [
-                {
-                    "name": "Create Room",
-                    "event": [
-                        {
-                            "listen": "test",
-                            "script": {
-                                "exec": [
-                                    "if (pm.response.code === 201) {",
-                                    "    var jsonData = pm.response.json();",
-                                    "    pm.environment.set(\"roomId\", jsonData.id);",
-                                    "}"
-                                ]
-                            }
-                        }
-                    ],
-                    "request": {
-                        "auth": {
-                            "type": "bearer",
-                            "bearer": [
-                                {
-                                    "key": "token",
-                                    "value": "{{token}}",
-                                    "type": "string"
-                                }
-                            ]
-                        },
-                        "method": "POST",
-                        "header": [
-                            {
-                                "key": "Content-Type",
-                                "value": "application/json"
-                            }
-                        ],
-                        "body": {
-                            "mode": "raw",
-                            "raw": "{\n  \"name\": \"General Discussion\"\n}"
-                        },
-                        "url": {
-                            "raw": "{{baseUrl}}/api/rooms/create",
-                            "host": [
-                                "{{baseUrl}}"
-                            ],
-                            "path": [
-                                "api",
-                                "rooms",
-                                "create"
-                            ]
-                        }
-                    },
-                    "response": []
-                },
-                {
-                    "name": "List Rooms",
-                    "request": {
-                        "auth": {
-                            "type": "bearer",
-                            "bearer": [
-                                {
-                                    "key": "token",
-                                    "value": "{{token}}",
-                                    "type": "string"
-                                }
-                            ]
-                        },
-                        "method": "GET",
-                        "header": [],
-                        "url": {
-                            "raw": "{{baseUrl}}/api/rooms/list",
-                            "host": [
-                                "{{baseUrl}}"
-                            ],
-                            "path": [
-                                "api",
-                                "rooms",
-                                "list"
-                            ]
-                        }
-                    },
-                    "response": []
-                }
-            ]
-        }
-    ],
-    "variable": [
-        {
-            "key": "baseUrl",
-            "value": "https://sugobackend-api-production.up.railway.app",
-            "type": "string"
-        },
-        {
-            "key": "token",
-            "value": "",
-            "type": "string"
-        },
-        {
-            "key": "userId",
-            "value": "",
-            "type": "string"
-        },
-        {
-            "key": "roomId",
-            "value": "",
-            "type": "string"
-        },
-        {
-            "key": "username",
-            "value": "",
-            "type": "string"
-        },
-        {
-            "key": "email",
-            "value": "",
-            "type": "string"
-        }
+  "info": {
+    "_postman_id": "sugo-backend-api-collection-v2",
+    "name": "Sugo Backend API (Full)",
+    "description": "Complete API collection for Sugo Backend with Auth, Users, Rooms, Wallet, Gifts, Matching, Moderation, and Admin endpoints.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{token}}",
+        "type": "string"
+      }
     ]
+  },
+  "item": [
+    {
+      "name": "Auth",
+      "description": "Authentication endpoints",
+      "item": [
+        {
+          "name": "Register",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"john_doe\",\n  \"email\": \"john.doe@example.com\",\n  \"password\": \"SecurePassword123!\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/register",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "register"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "  var jsonData = pm.response.json();",
+                  "  pm.environment.set(\"token\", jsonData.token);",
+                  "  pm.environment.set(\"userId\", jsonData.userId);",
+                  "  pm.environment.set(\"username\", jsonData.username);",
+                  "  pm.environment.set(\"email\", jsonData.email);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"john.doe@example.com\",\n  \"password\": \"SecurePassword123!\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "login"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Users",
+      "description": "User management endpoints",
+      "item": [
+        {
+          "name": "Get Profile",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/users/profile/{{userId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "users",
+                "profile",
+                "{{userId}}"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Rooms",
+      "description": "Chat room management endpoints",
+      "item": [
+        {
+          "name": "Create Room",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "  var jsonData = pm.response.json();",
+                  "  pm.environment.set(\"roomId\", jsonData.id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"General Discussion\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/rooms/create",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "rooms",
+                "create"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "List Rooms",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/rooms/list",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "rooms",
+                "list"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Wallet",
+      "description": "Wallet balance and top-up",
+      "item": [
+        {
+          "name": "Get My Wallet",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/wallet",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "wallet"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Top Up Wallet",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": 1000\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/wallet/topup",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "wallet",
+                "topup"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Gifts",
+      "description": "Gifts store, send gift, and ranking",
+      "item": [
+        {
+          "name": "List Gifts",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/gifts",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "gifts"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Send Gift To Room",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"giftId\": 2,\n  \"quantity\": 1,\n  \"roomId\": {{roomId}}\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/gifts/send",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "gifts",
+                "send"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Send Gift To User",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"giftId\": 1,\n  \"quantity\": 10,\n  \"targetUserId\": {{targetUserId}}\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/gifts/send",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "gifts",
+                "send"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Room Gift Ranking",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/gifts/ranking/room/{{roomId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "gifts",
+                "ranking",
+                "room",
+                "{{roomId}}"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Matching",
+      "description": "Room recommendation endpoint",
+      "item": [
+        {
+          "name": "Recommend Room",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/matching/recommend-room",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "matching",
+                "recommend-room"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Moderation",
+      "description": "Reports and moderation endpoints",
+      "item": [
+        {
+          "name": "Create Report",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"targetUserId\": {{targetUserId}},\n  \"roomId\": null,\n  \"reason\": \"Spam messages\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/moderation/report",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "moderation",
+                "report"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "My Reports",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/moderation/my-reports",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "moderation",
+                "my-reports"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Admin",
+      "description": "Admin endpoints (require IsAdmin = true)",
+      "item": [
+        {
+          "name": "Get Reports (All or by Status)",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/reports?status=Pending",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "reports"
+              ],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "Pending"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Report Status",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/reports/{{reportId}}/update-status?status=Resolved",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "reports",
+                "{{reportId}}",
+                "update-status"
+              ],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "Resolved"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:5000",
+      "type": "string"
+    },
+    {
+      "key": "token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "userId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "roomId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "targetUserId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "reportId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "username",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "email",
+      "value": "",
+      "type": "string"
+    }
+  ]
 }

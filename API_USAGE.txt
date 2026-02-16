@@ -1,0 +1,158 @@
+Sugo Backend API - دليل الاستخدام السريع
+
+1) نظرة عامة
+-------------
+هذا الـ API يوفر باك اند كامل لتطبيق بث مباشر / غرف صوتية به:
+- تسجيل وحسابات مستخدمين مع JWT
+- غرف (Rooms) للدردشة والبث
+- محفظة (Wallet) وشحن رصيد
+- متجر هدايا (Gifts) + إرسال هدايا + ترتيب Top Supporters
+- طبقة Matching لاقتراح غرفة للمستخدم
+- نظام بلاغات (Moderation) ولوحة إدارة بسيطة (Admin)
+
+عنوان التشغيل الافتراضي محلياً:
+http://localhost:5000
+
+2) خطوات العمل الأساسية للمطور (Flow)
+--------------------------------------
+1. يسجّل المستخدم حساب جديد
+2. يسجّل الدخول ويحصل على JWT
+3. يرسل الـ JWT في الهيدر Authorization: Bearer {token}
+4. ينشئ غرفة أو ينضم لغرفة موجودة
+5. يشحن رصيد المحفظة
+6. يرسل هدايا في الغرفة أو لمستخدم معين
+7. يمكنه الإبلاغ عن مستخدم/غرفة عند الإساءة
+8. المستخدم الـ Admin يراجع البلاغات ويحدث حالتها
+
+3) المصادقة JWT - كيف تعمل
+--------------------------
+الملف المسؤول: Services/TokenService.cs
+
+عند تسجيل الدخول بنجاح:
+- يتم إنشاء JWT يحتوي Claims:
+  - NameIdentifier = user.Id
+  - Name = user.Username
+  - Email = user.Email
+- يتم توقيع التوكن باستخدام:
+  - Jwt:Key من appsettings.json
+  - Jwt:Issuer و Jwt:Audience
+  - ExpiryInMinutes للتحكم في صلاحية التوكن
+
+إستخدام التوكن في أي طلب محمي:
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+
+4) قائمة الEndpoints حسب المجموعة
+---------------------------------
+4.1 Auth (بدون توكن)
+- POST /api/auth/register
+  - لإنشاء حساب جديد
+  - Body:
+    { "username": "", "email": "", "password": "" }
+
+- POST /api/auth/login
+  - لتسجيل الدخول والحصول على JWT
+  - Body:
+    { "email": "", "password": "" }
+  - Response:
+    { "userId", "username", "email", "token" }
+
+4.2 Users (يتطلب JWT)
+- GET /api/users/profile/{id}
+  - لجلب بيانات بروفايل مستخدم
+
+4.3 Rooms (يتطلب JWT)
+- POST /api/rooms/create
+  - لإنشاء غرفة جديدة
+  - Body:
+    { "name": "My Room" }
+  - يعيد تفاصيل الغرفة
+
+- GET /api/rooms/list
+  - لجلب كل الغرف المتاحة
+
+- GET /api/rooms/{id}
+  - لجلب غرفة معينة حسب رقمها
+
+4.4 Wallet (يتطلب JWT)
+- GET /api/wallet
+  - لجلب رصيد المحفظة للمستخدم الحالي
+  - Response:
+    { "userId": 1, "balance": 5000 }
+
+- POST /api/wallet/topup
+  - لشحن المحفظة
+  - Body:
+    { "amount": 1000 }
+
+4.5 Gifts (بعضها بدون توكن)
+- GET /api/gifts
+  - لا يحتاج توكن
+  - يعيد قائمة الهدايا:
+    [ { "id": 1, "name": "Rose", "price": 10, "iconUrl": "..." }, ... ]
+
+- POST /api/gifts/send (يتطلب JWT)
+  - لإرسال هدية لغرفة أو لمستخدم
+  - لإرسال لغرفة:
+    { "giftId": 2, "quantity": 1, "roomId": 5 }
+  - لإرسال لمستخدم:
+    { "giftId": 1, "quantity": 10, "targetUserId": 7 }
+
+- GET /api/gifts/ranking/room/{roomId} (يتطلب JWT)
+  - لجلب ترتيب أعلى الداعمين في الغرفة حسب إجمالي الإنفاق
+
+4.6 Matching (يتطلب JWT)
+- GET /api/matching/recommend-room
+  - يقترح غرفة للمستخدم بناءً على النشاط (الهدايا/القدم)
+  - Response نفس شكل RoomDto
+
+4.7 Moderation (يتطلب JWT)
+- POST /api/moderation/report
+  - لإنشاء بلاغ على مستخدم أو غرفة
+  - Body مثال:
+    { "targetUserId": 2, "roomId": null, "reason": "Spam messages" }
+
+- GET /api/moderation/my-reports
+  - لجلب البلاغات التي أرسلها المستخدم الحالي
+
+4.8 Admin (يتطلب JWT + أن يكون المستخدم IsAdmin = true)
+- GET /api/admin/reports?status=Pending
+  - لجلب كل البلاغات (يمكن تصفية حسب الحالة)
+
+- POST /api/admin/reports/{id}/update-status?status=Resolved
+  - لتحديث حالة بلاغ إلى:
+    Pending / InReview / Resolved / Rejected
+
+5) الReal-Time (SignalR)
+------------------------
+الملف: Hubs/RoomHub.cs
+مسار الHub: /hubs/room
+
+الEvents المهمة في الFrontend:
+- عند الانضمام لغرفة:
+  - تستدعي من Client: JoinRoom(roomId)
+
+- لاستقبال رسائل الشات:
+  - الاشتراك في event: ReceiveMessage
+  - Payload:
+    { roomId, userId, message, sentAt }
+
+- لاستقبال إشعارات الهدايا:
+  - الاشتراك في event: GiftReceived
+  - Payload:
+    { roomId, giftId, quantity, senderUserId, targetUserId, createdAt }
+
+ملاحظة: استدعاء SendGift عبر REST سيقوم تلقائياً ببث GiftReceived لكل من في الغرفة عبر SignalR.
+
+6) كيفية الاستخدام من Postman
+-----------------------------
+1. استورد ملف SugoBackend.postman_collection.json في Postman
+2. في طلب Login نفّذ واستخرج التوكن
+3. متغيّر {{token}} يتم ضبطه تلقائياً من سكريبت الLogin (داخل المجموعة)
+4. نفّذ:
+   - Create Room
+   - Top Up Wallet
+   - Send Gift
+   - Ranking / Matching / Reports / Admin
+
+بهذا الدليل يمكن لأي مطور واجهات أمامية فهم الAPI وربطه بتطبيق موبايل أو ويب بسهولة.
+
