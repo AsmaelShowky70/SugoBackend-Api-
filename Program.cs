@@ -5,7 +5,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using SugoBackend.Data; // افترض أن هذا هو namespace الخاص بـ DbContext
 using SugoBackend.Services; // افترض أن هذا هو namespace الخاص بـ TokenService
-using Npgsql.EntityFrameworkCore.PostgreSQL;
 using SugoBackend.Middleware; // إضافة الـ Namespace الجديد
 using Microsoft.AspNetCore.ResponseCompression; // لضغط الاستجابة
 using Microsoft.AspNetCore.SignalR;
@@ -43,9 +42,13 @@ var isDevelopment = builder.Environment.IsDevelopment();
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 builder.Services.AddDbContext<AppDbContext>(options =>
 {
-    // استخدام Npgsql دائماً للاتصال بقاعدة بيانات Neon PostgreSQL
-    // تم إزالة دعم SQL Server و InMemory لتوحيد بيئة العمل وضمان الاستقرار
-    options.UseNpgsql(connectionString);
+    options.UseSqlServer(connectionString, sqlOptions =>
+    {
+        sqlOptions.EnableRetryOnFailure(
+            maxRetryCount: 5,
+            maxRetryDelay: TimeSpan.FromSeconds(10),
+            errorNumbersToAdd: null);
+    });
 });
 
 builder.Services.AddScoped<ITokenService, TokenService>();
@@ -95,6 +98,23 @@ builder.Services.AddCors(options =>
 });
 
 var app = builder.Build();
+
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+    try
+    {
+        logger.LogInformation("Applying pending migrations (if any)");
+        db.Database.Migrate();
+        logger.LogInformation("Database migration completed successfully.");
+    }
+    catch (Exception ex)
+    {
+        // If migration fails (e.g., DB unreachable), log error but allow the app to start
+        logger.LogError(ex, "Database migration failed during startup. The application will continue to run, but database operations may fail until the issue is resolved.");
+    }
+}
 
 // --- 4. تكوين الـ Middleware Pipeline ---
 
@@ -150,11 +170,11 @@ app.MapGet("/health", async (AppDbContext db) =>
             {
                 await db.Database.OpenConnectionAsync();
                 await db.Database.CloseConnectionAsync();
-                 return Results.Json(new { status = "ok", database = "connected_retry" });
+                return Results.Json(new { status = "ok", database = "connected_retry" });
             }
             catch (Exception ex)
             {
-                 return Results.Json(new { status = "error", database = "disconnected", error = ex.Message }, statusCode: 503);
+                return Results.Json(new { status = "error", database = "disconnected", error = ex.Message }, statusCode: 503);
             }
         }
     }

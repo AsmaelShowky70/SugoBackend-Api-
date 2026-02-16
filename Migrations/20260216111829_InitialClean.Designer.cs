@@ -2,9 +2,9 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using SugoBackend.Data;
 
 #nullable disable
@@ -12,8 +12,8 @@ using SugoBackend.Data;
 namespace SugoBackend.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260216083626_AddWalletAndGifts")]
-    partial class AddWalletAndGifts
+    [Migration("20260216111829_InitialClean")]
+    partial class InitialClean
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -21,30 +21,30 @@ namespace SugoBackend.Migrations
 #pragma warning disable 612, 618
             modelBuilder
                 .HasAnnotation("ProductVersion", "9.0.4")
-                .HasAnnotation("Relational:MaxIdentifierLength", 63);
+                .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
-            NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
+            SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
             modelBuilder.Entity("SugoBackend.Models.Gift", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
+                        .HasColumnType("int");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("IconUrl")
-                        .HasColumnType("text");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("IsActive")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("boolean")
+                        .HasColumnType("bit")
                         .HasDefaultValue(true);
 
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
+                        .HasColumnType("nvarchar(100)");
 
                     b.Property<long>("Price")
                         .HasColumnType("bigint");
@@ -84,27 +84,27 @@ namespace SugoBackend.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
+                        .HasColumnType("int");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("datetime2");
 
                     b.Property<int>("GiftId")
-                        .HasColumnType("integer");
+                        .HasColumnType("int");
 
                     b.Property<int>("Quantity")
-                        .HasColumnType("integer");
+                        .HasColumnType("int");
 
                     b.Property<int?>("RoomId")
-                        .HasColumnType("integer");
+                        .HasColumnType("int");
 
                     b.Property<int>("SenderUserId")
-                        .HasColumnType("integer");
+                        .HasColumnType("int");
 
                     b.Property<int?>("TargetUserId")
-                        .HasColumnType("integer");
+                        .HasColumnType("int");
 
                     b.Property<long>("TotalPrice")
                         .HasColumnType("bigint");
@@ -122,24 +122,66 @@ namespace SugoBackend.Migrations
                     b.ToTable("GiftTransactions");
                 });
 
+            modelBuilder.Entity("SugoBackend.Models.Report", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Reason")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<int>("ReporterUserId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("ResolvedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("RoomId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("TargetUserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ReporterUserId");
+
+                    b.HasIndex("RoomId");
+
+                    b.HasIndex("TargetUserId");
+
+                    b.ToTable("Reports");
+                });
+
             modelBuilder.Entity("SugoBackend.Models.Room", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
+                        .HasColumnType("int");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("datetime2");
 
                     b.Property<int>("CreatedByUserId")
-                        .HasColumnType("integer");
+                        .HasColumnType("int");
 
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(200)
-                        .HasColumnType("character varying(200)");
+                        .HasColumnType("nvarchar(200)");
 
                     b.HasKey("Id");
 
@@ -152,26 +194,31 @@ namespace SugoBackend.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
+                        .HasColumnType("int");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("Email")
                         .IsRequired()
                         .HasMaxLength(255)
-                        .HasColumnType("character varying(255)");
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<bool>("IsAdmin")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(false);
 
                     b.Property<string>("PasswordHash")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Username")
                         .IsRequired()
                         .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
+                        .HasColumnType("nvarchar(100)");
 
                     b.HasKey("Id");
 
@@ -182,18 +229,18 @@ namespace SugoBackend.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
+                        .HasColumnType("int");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<long>("Balance")
                         .HasColumnType("bigint");
 
                     b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("datetime2");
 
                     b.Property<int>("UserId")
-                        .HasColumnType("integer");
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
 
@@ -236,6 +283,31 @@ namespace SugoBackend.Migrations
                     b.Navigation("TargetUser");
                 });
 
+            modelBuilder.Entity("SugoBackend.Models.Report", b =>
+                {
+                    b.HasOne("SugoBackend.Models.User", "ReporterUser")
+                        .WithMany("ReportsCreated")
+                        .HasForeignKey("ReporterUserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("SugoBackend.Models.Room", "Room")
+                        .WithMany()
+                        .HasForeignKey("RoomId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("SugoBackend.Models.User", "TargetUser")
+                        .WithMany("ReportsReceived")
+                        .HasForeignKey("TargetUserId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("ReporterUser");
+
+                    b.Navigation("Room");
+
+                    b.Navigation("TargetUser");
+                });
+
             modelBuilder.Entity("SugoBackend.Models.Room", b =>
                 {
                     b.HasOne("SugoBackend.Models.User", "CreatedByUser")
@@ -273,6 +345,10 @@ namespace SugoBackend.Migrations
                     b.Navigation("CreatedRooms");
 
                     b.Navigation("ReceivedGifts");
+
+                    b.Navigation("ReportsCreated");
+
+                    b.Navigation("ReportsReceived");
 
                     b.Navigation("SentGifts");
 

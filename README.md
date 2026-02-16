@@ -1,13 +1,18 @@
 # Sugo Backend API
 
-A simplified ASP.NET Core Web API backend for the Sugo application (chat/social task app).
+A full ASP.NET Core Web API backend for the Sugo application (live rooms / social task app).
 
 ## 🚀 Features
 
 - **User Authentication**: Registration and JWT-based login
 - **User Management**: Get user profile information
 - **Chat Rooms**: Create and manage chat rooms
-- **Database**: SQLite with Entity Framework Core
+- **Wallet**: Per-user wallet with balance and top-up
+- **Gifts Store**: List gifts, send gifts to rooms or users, room ranking
+- **Matching**: Recommend a room based on activity
+- **Moderation**: User/room reports and admin review
+- **Real-Time**: SignalR hub for room events and gift notifications
+- **Database**: SQL Server (production) with Entity Framework Core
 - **API Documentation**: Swagger UI for easy testing
 - **Security**: JWT Bearer token authentication
 - **CORS**: Enabled for frontend integration
@@ -32,12 +37,18 @@ dotnet ef database update
 
 This will create the SQLite database (`sugo.db`) with the User and Room tables.
 
-### 3. Run the Application
+### 3. Run the Application (Local)
 ```bash
 dotnet run
 ```
 
-The API will start on `https://localhost:5001`
+The API will start on `http://localhost:5000` (see launchSettings.json)
+
+### 4. Production URL
+
+The deployed API (for frontend/mobile use) is available at:
+
+`http://sugobackend.runasp.net`
 
 ## 📚 API Endpoints
 
@@ -101,19 +112,29 @@ The API will start on `https://localhost:5001`
 
 ## 🧪 Testing with Swagger UI
 
+### Local
 1. Start the application: `dotnet run`
-2. Open browser and navigate to: `https://localhost:5001/swagger`
+2. Open browser and navigate to: `http://localhost:5000/swagger`
 3. Use the interactive Swagger UI to test endpoints
 4. For protected endpoints, click the "Authorize" button and paste your JWT token
+
+### Production
+1. Open browser and navigate to: `http://sugobackend.runasp.net/swagger`
+2. Use the same flow as local for testing and authorization
 
 ## 📤 Testing with Postman
 
 1. Import the provided `SugoBackend.postman_collection.json` into Postman
-2. Set the Postman variable `{{token}}` after logging in
-3. All endpoints are pre-configured with proper headers and authentication
+2. Ensure the collection variable `{{baseUrl}}` is set to:
+   - Local: `http://localhost:5000`
+   - Production: `http://sugobackend.runasp.net`
+3. Execute the `Login` request to get a JWT token
+4. The Postman script will automatically set:
+   - `{{token}}`, `{{userId}}`, `{{username}}`, `{{email}}`
+5. All protected endpoints are pre-configured with bearer token headers
 
 ### Postman Variables
-- `{{baseUrl}}`: `https://localhost:5001` (set automatically)
+- `{{baseUrl}}`: Base API URL (local or production)
 - `{{token}}`: JWT token (set after login)
 - `{{userId}}`: User ID (set after registration/login)
 - `{{roomId}}`: Room ID (set after creating a room)
