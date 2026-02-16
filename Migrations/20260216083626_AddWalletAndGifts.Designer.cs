@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using SugoBackend.Data;
@@ -11,9 +12,11 @@ using SugoBackend.Data;
 namespace SugoBackend.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260216083626_AddWalletAndGifts")]
+    partial class AddWalletAndGifts
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -119,48 +122,6 @@ namespace SugoBackend.Migrations
                     b.ToTable("GiftTransactions");
                 });
 
-            modelBuilder.Entity("SugoBackend.Models.Report", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("Reason")
-                        .IsRequired()
-                        .HasMaxLength(1000)
-                        .HasColumnType("character varying(1000)");
-
-                    b.Property<int>("ReporterUserId")
-                        .HasColumnType("integer");
-
-                    b.Property<DateTime?>("ResolvedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<int?>("RoomId")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("Status")
-                        .HasColumnType("integer");
-
-                    b.Property<int?>("TargetUserId")
-                        .HasColumnType("integer");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ReporterUserId");
-
-                    b.HasIndex("RoomId");
-
-                    b.HasIndex("TargetUserId");
-
-                    b.ToTable("Reports");
-                });
-
             modelBuilder.Entity("SugoBackend.Models.Room", b =>
                 {
                     b.Property<int>("Id")
@@ -202,11 +163,6 @@ namespace SugoBackend.Migrations
                         .IsRequired()
                         .HasMaxLength(255)
                         .HasColumnType("character varying(255)");
-
-                    b.Property<bool>("IsAdmin")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("boolean")
-                        .HasDefaultValue(false);
 
                     b.Property<string>("PasswordHash")
                         .IsRequired()
@@ -280,31 +236,6 @@ namespace SugoBackend.Migrations
                     b.Navigation("TargetUser");
                 });
 
-            modelBuilder.Entity("SugoBackend.Models.Report", b =>
-                {
-                    b.HasOne("SugoBackend.Models.User", "ReporterUser")
-                        .WithMany("ReportsCreated")
-                        .HasForeignKey("ReporterUserId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("SugoBackend.Models.Room", "Room")
-                        .WithMany()
-                        .HasForeignKey("RoomId")
-                        .OnDelete(DeleteBehavior.Cascade);
-
-                    b.HasOne("SugoBackend.Models.User", "TargetUser")
-                        .WithMany("ReportsReceived")
-                        .HasForeignKey("TargetUserId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
-                    b.Navigation("ReporterUser");
-
-                    b.Navigation("Room");
-
-                    b.Navigation("TargetUser");
-                });
-
             modelBuilder.Entity("SugoBackend.Models.Room", b =>
                 {
                     b.HasOne("SugoBackend.Models.User", "CreatedByUser")
@@ -342,10 +273,6 @@ namespace SugoBackend.Migrations
                     b.Navigation("CreatedRooms");
 
                     b.Navigation("ReceivedGifts");
-
-                    b.Navigation("ReportsCreated");
-
-                    b.Navigation("ReportsReceived");
 
                     b.Navigation("SentGifts");
 

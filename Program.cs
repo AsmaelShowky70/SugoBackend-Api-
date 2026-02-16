@@ -8,6 +8,8 @@ using SugoBackend.Services; // افترض أن هذا هو namespace الخاص 
 using Npgsql.EntityFrameworkCore.PostgreSQL;
 using SugoBackend.Middleware; // إضافة الـ Namespace الجديد
 using Microsoft.AspNetCore.ResponseCompression; // لضغط الاستجابة
+using Microsoft.AspNetCore.SignalR;
+using SugoBackend.Hubs;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -44,8 +46,10 @@ builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(connectionString);
 });
 
-// تكوين خدمة إنشاء التوكن
 builder.Services.AddScoped<ITokenService, TokenService>();
+builder.Services.AddScoped<IWalletService, WalletService>();
+builder.Services.AddScoped<IGiftService, GiftService>();
+builder.Services.AddScoped<IMatchingService, MatchingService>();
 
 // --- 3. تكوين مصادقة JWT ---
 var jwtKey = builder.Configuration["Jwt:Key"];
@@ -124,6 +128,8 @@ app.UseCors("AllowSpecificOrigin"); // استخدام سياسة CORS المحد
 app.UseAuthentication(); // المصادقة أولاً
 app.UseAuthorization(); // ثم التفويض
 app.MapControllers();
+
+app.MapHub<RoomHub>("/hubs/room");
 
 // تحديث فحص الصحة ليشمل قاعدة البيانات
 app.MapGet("/health", async (AppDbContext db) =>

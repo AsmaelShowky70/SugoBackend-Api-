@@ -12,5 +12,6 @@ public class Room
 
     #region Navigation Properties
     public User? CreatedByUser { get; set; }
+    public ICollection<GiftTransaction> GiftTransactions { get; set; } = new List<GiftTransaction>();
     #endregion
 }
