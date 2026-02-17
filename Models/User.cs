@@ -11,6 +11,7 @@ public class User
     public required string PasswordHash { get; set; }
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public bool IsAdmin { get; set; }
+    public bool IsBanned { get; set; } = false;
 
     #region Navigation Properties
     public ICollection<Room> CreatedRooms { get; set; } = new List<Room>();

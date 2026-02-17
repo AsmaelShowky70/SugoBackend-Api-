@@ -66,15 +66,19 @@ public class GiftService : IGiftService
 
         await using var transaction = await _context.Database.BeginTransactionAsync(cancellationToken);
 
-        var wallet = await _walletService.GetOrCreateWalletAsync(senderUserId, cancellationToken);
-
-        if (wallet.Balance < totalPrice)
+        // Admin/system can send gifts for free (senderUserId = 0)
+        if (senderUserId > 0)
         {
-            throw new InvalidOperationException("Insufficient balance.");
-        }
+            var wallet = await _walletService.GetOrCreateWalletAsync(senderUserId, cancellationToken);
 
-        wallet.Balance -= totalPrice;
-        wallet.UpdatedAt = DateTime.UtcNow;
+            if (wallet.Balance < totalPrice)
+            {
+                throw new InvalidOperationException("Insufficient balance.");
+            }
+
+            wallet.Balance -= totalPrice;
+            wallet.UpdatedAt = DateTime.UtcNow;
+        }
 
         var giftTransaction = new GiftTransaction
         {
