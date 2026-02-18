@@ -1,0 +1,346 @@
+Sugo Backend API - دليل الاستخدام للمشتري
+=========================================
+
+1) نظرة عامة
+------------
+هذا المنتج عبارة عن REST API جاهز (بدون واجهة مستخدم) يمكنك ربطه بأي مشروع:
+- موبايل (Flutter / React Native / Android / iOS)
+- ويب (React / Vue / Angular / أي إطار عمل)
+
+الـ API يوفر لك نظام غرف بث مباشر/صوتية مع:
+- تسجيل دخول مستخدمين باستخدام JWT
+- غرف (Rooms) مع إدارة كاملة
+- محفظة (Wallet) لكل مستخدم
+- متجر هدايا (Gifts) وإرسال هدايا مع ترتيب أعلى الداعمين
+- Matching لاقتراح غرفة مناسبة
+- نظام بلاغات (Moderation) ولوحة إدارة (Admin)
+- SignalR Hub للأحداث اللحظية (Real-Time)
+
+أنت كمشتري تحصل على:
+- رابط API جاهز على الإنترنت
+- مفتاح API خاص بك لاستخدام الـ endpoints
+- توثيق كامل عبر Swagger + هذا الملف
+
+2) بيانات الاتصال بالـ API
+--------------------------
+- Base URL (عنوان الأساس للطلبات):
+  http://sugobackend.runasp.net
+
+- رابط التوثيق (Swagger UI):
+  http://sugobackend.runasp.net/swagger
+
+من خلال Swagger تستطيع:
+- معاينة جميع الـ endpoints
+- رؤية نماذج الـ Request / Response
+- تجربة الطلبات بعد إضافة مفاتيح الحماية (API Key + JWT)
+
+3) الحماية: مفتاح الـ API (API Key)
+-----------------------------------
+كل طلب إلى الـ API (باستثناء / و /health و /swagger) يتطلب مفتاح API.
+
+- اسم الهيدر المستخدم:
+  X-Project-Key
+
+- القيمة الافتراضية داخل الإعدادات (كمثال داخل الكود):
+  CHANGE_ME_TO_REAL_API_KEY
+
+مفتاح الـ API الفعلي الذي ستستلمه من صاحب الـ API:
+- X-Project-Key: YOUR_CLIENT_API_KEY_HERE
+
+مثال طلب HTTP (عام):
+--------------------
+Headers المطلوبة في أي طلب محمي:
+- X-Project-Key: YOUR_CLIENT_API_KEY_HERE
+- Authorization: Bearer {jwt_token}  (لبعض الـ endpoints التي تحتاج تسجيل دخول)
+
+مثال Curl:
+curl -X GET "http://sugobackend.runasp.net/api/rooms/list" ^
+  -H "X-Project-Key: YOUR_CLIENT_API_KEY_HERE" ^
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+
+
+4) الحماية: تسجيل الدخول باستخدام JWT
+--------------------------------------
+هناك طبقتان من الحماية:
+1. API Key: لحماية استخدام الـ API نفسه.
+2. JWT Token: لتعريف المستخدم داخل النظام (user id, email, username).
+
+خطوات الحصول على JWT:
+
+4.1 تسجيل مستخدم جديد
+---------------------
+- Endpoint:
+  POST /api/auth/register
+
+- Body (JSON):
+{
+  "username": "john_doe",
+  "email": "john.doe@example.com",
+  "password": "SecurePassword123!"
+}
+
+- Response (مثال مبسط):
+{
+  "userId": 1,
+  "username": "john_doe",
+  "email": "john.doe@example.com"
+}
+
+4.2 تسجيل الدخول والحصول على التوكن
+-----------------------------------
+- Endpoint:
+  POST /api/auth/login
+
+- Body (JSON):
+{
+  "email": "john.doe@example.com",
+  "password": "SecurePassword123!"
+}
+
+- Response (مثال):
+{
+  "userId": 1,
+  "username": "john_doe",
+  "email": "john.doe@example.com",
+  "token": "eyJhbGciOiJIUzI1NiIs..."
+}
+
+بعد الحصول على token:
+- في كل طلب محمي:
+  - أضف Header:
+    Authorization: Bearer {token}
+  - وأضف أيضاً:
+    X-Project-Key: YOUR_CLIENT_API_KEY_HERE
+
+
+5) المجموعات الرئيسية للـ Endpoints
+-----------------------------------
+
+5.1 Auth (مصادقة المستخدم)
+--------------------------
+1) Register
+- POST /api/auth/register
+- الوصف: إنشاء حساب مستخدم جديد.
+- Body:
+  - username: اسم المستخدم
+  - email: البريد الإلكتروني
+  - password: كلمة المرور
+
+2) Login
+- POST /api/auth/login
+- الوصف: تسجيل الدخول والحصول على JWT.
+- Body:
+  - email
+  - password
+- Response:
+  - userId, username, email, token
+
+
+5.2 Users (بيانات المستخدم)
+---------------------------
+1) Get Profile
+- GET /api/users/profile/{id}
+- الوصف: جلب بيانات مستخدم واحد عن طريق Id.
+- Headers:
+  - X-Project-Key
+  - Authorization: Bearer {token}
+
+
+5.3 Rooms (الغرف)
+-----------------
+1) Create Room
+- POST /api/rooms/create
+- الوصف: إنشاء غرفة جديدة.
+- Headers:
+  - X-Project-Key
+  - Authorization: Bearer {token}
+- Body:
+{
+  "name": "General Discussion"
+}
+
+2) List Rooms
+- GET /api/rooms/list
+- الوصف: الحصول على قائمة كل الغرف.
+- Headers:
+  - X-Project-Key
+  - Authorization: Bearer {token}
+
+3) Get Room by Id
+- GET /api/rooms/{id}
+- الوصف: الحصول على تفاصيل غرفة واحدة.
+- Headers:
+  - X-Project-Key
+  - Authorization: Bearer {token}
+
+
+5.4 Wallet (المحفظة)
+--------------------
+1) Get My Wallet
+- GET /api/wallet
+- الوصف: جلب رصيد المحفظة للمستخدم الحالي.
+- Headers:
+  - X-Project-Key
+  - Authorization: Bearer {token}
+
+2) Top Up Wallet
+- POST /api/wallet/topup
+- الوصف: شحن رصيد المحفظة للمستخدم الحالي.
+- Headers:
+  - X-Project-Key
+  - Authorization: Bearer {token}
+- Body:
+{
+  "amount": 1000
+}
+
+
+5.5 Gifts (الهدايا)
+-------------------
+1) List Gifts
+- GET /api/gifts
+- الوصف: جلب قائمة كل الهدايا المتاحة.
+- Headers:
+  - X-Project-Key
+  - (لا يتطلب JWT لهذا الـ endpoint)
+
+2) Send Gift
+- POST /api/gifts/send
+- الوصف: إرسال هدية لغرفة أو لمستخدم.
+- Headers:
+  - X-Project-Key
+  - Authorization: Bearer {token}
+- Body (إرسال لغرفة):
+{
+  "giftId": 2,
+  "quantity": 1,
+  "roomId": 5
+}
+
+- Body (إرسال لمستخدم):
+{
+  "giftId": 1,
+  "quantity": 10,
+  "targetUserId": 7
+}
+
+3) Room Ranking
+- GET /api/gifts/ranking/room/{roomId}
+- الوصف: ترتيب أعلى الداعمين في غرفة حسب إجمالي الإنفاق.
+- Headers:
+  - X-Project-Key
+  - Authorization: Bearer {token}
+
+
+5.6 Matching (اقتراح غرفة)
+-------------------------
+1) Recommend Room
+- GET /api/matching/recommend-room
+- الوصف: اقتراح غرفة للمستخدم بناءً على النشاط (هدايا/قدم الغرفة).
+- Headers:
+  - X-Project-Key
+  - Authorization: Bearer {token}
+
+
+5.7 Moderation (البلاغات)
+-------------------------
+1) Create Report
+- POST /api/moderation/report
+- الوصف: إرسال بلاغ على مستخدم أو غرفة.
+- Headers:
+  - X-Project-Key
+  - Authorization: Bearer {token}
+- Body (مثال):
+{
+  "targetUserId": 2,
+  "roomId": null,
+  "reason": "Spam messages"
+}
+
+2) My Reports
+- GET /api/moderation/my-reports
+- الوصف: جلب البلاغات التي أرسلها المستخدم الحالي.
+- Headers:
+  - X-Project-Key
+  - Authorization: Bearer {token}
+
+
+5.8 Admin (لوحة الإدارة)
+------------------------
+يتطلب أن يكون المستخدم IsAdmin = true داخل النظام.
+
+أمثلة endpoints مهمة:
+
+1) Get Reports
+- GET /api/admin/reports?status=Pending
+- الوصف: جلب البلاغات وتصفيتها حسب الحالة.
+- Headers:
+  - X-Project-Key
+  - Authorization: Bearer {token}
+
+2) Update Report Status
+- POST /api/admin/reports/{id}/update-status?status=Resolved
+- الوصف: تحديث حالة بلاغ.
+- Headers:
+  - X-Project-Key
+  - Authorization: Bearer {token}
+
+3) إدارة المستخدمين والغرف
+- توجد endpoints لإدارة المستخدمين والغرف يمكن معاينتها من Swagger:
+  http://sugobackend.runasp.net/swagger
+
+
+6) سير عمل نموذجي من جهة الواجهة الأمامية
+-----------------------------------------
+الخطوات النموذجية لأي تطبيق UI يستخدم هذا الـ API:
+
+1) يسجّل المستخدم جديد أو يسجّل الدخول:
+   - POST /api/auth/register (اختياري)
+   - POST /api/auth/login → الحصول على token
+
+2) حفظ token في الواجهة الأمامية (بشكل آمن).
+
+3) لكل طلب بعد ذلك:
+   - أرسل في Headers:
+     - X-Project-Key: YOUR_CLIENT_API_KEY_HERE
+     - Authorization: Bearer {token}
+
+4) إنشاء الغرف وعرضها:
+   - POST /api/rooms/create
+   - GET  /api/rooms/list
+
+5) محفظة وهدايا:
+   - GET  /api/wallet
+   - POST /api/wallet/topup
+   - GET  /api/gifts
+   - POST /api/gifts/send
+
+6) استخدام SignalR للأحداث اللحظية (اختياري):
+   - Hub URL: /hubs/room
+   - Events مهمة:
+     - JoinRoom(roomId)
+     - ReceiveMessage
+     - GiftReceived
+
+
+7) ملاحظات أمان للمشتري
+-----------------------
+- لا تشارك مفتاح الـ API (X-Project-Key) علناً.
+- خزن المفتاح في متغيرات بيئة (Environment Variables) في السيرفر الخاص بك إن أمكن.
+- توكن JWT يتم إصداره لفترة محددة ويُعاد تجديده عبر /api/auth/login عند اللزوم.
+- استخدم HTTPS دائماً في بيئة الإنتاج لحماية Headers.
+
+
+8) ملخص سريع
+------------
+- أنت تحصل على API جاهز:
+  - Live Rooms + Wallet + Gifts + Matching + Moderation + Admin
+- كل ما تحتاجه في الواجهة الأمامية:
+  - استدعاء endpoints المذكورة مع:
+    - X-Project-Key في جميع الطلبات
+    - Authorization: Bearer {token} للطلبات المحمية
+- التفاصيل الكاملة لكل Endpoint موجودة أيضاً في Swagger:
+  http://sugobackend.runasp.net/swagger
+
+أي استفسارات تقنية إضافية يمكن بناؤها بسهولة فوق هذا الـ API لأنه REST واضح ومقسّم حسب المجموعات.
+

@@ -9,6 +9,8 @@ using SugoBackend.Middleware; // إضافة الـ Namespace الجديد
 using Microsoft.AspNetCore.ResponseCompression; // لضغط الاستجابة
 using Microsoft.AspNetCore.SignalR;
 using SugoBackend.Hubs;
+using Microsoft.OpenApi.Models;
+using Microsoft.AspNetCore.Http;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -28,7 +30,31 @@ builder.Services.Configure<ForwardedHeadersOptions>(options =>
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(c =>
+{
+    c.SwaggerDoc("v1", new OpenApiInfo { Title = "SugoBackend API v1", Version = "v1" });
+    c.AddSecurityDefinition("ApiKey", new OpenApiSecurityScheme
+    {
+        Name = "X-Project-Key",
+        In = ParameterLocation.Header,
+        Type = SecuritySchemeType.ApiKey,
+        Description = "API key required to execute requests. Add as: X-Project-Key: {your_key}"
+    });
+    c.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "ApiKey"
+                }
+            },
+            Array.Empty<string>()
+        }
+    });
+});
 
 // إضافة Response Compression
 builder.Services.AddResponseCompression(options =>
@@ -97,6 +123,10 @@ builder.Services.AddCors(options =>
     }
 });
 
+var apiKeyEnabled = builder.Configuration.GetValue<bool>("ApiKeyProtection:Enabled");
+var apiKeyHeaderName = builder.Configuration.GetValue<string>("ApiKeyProtection:HeaderName") ?? "X-Project-Key";
+var apiKeyValue = builder.Configuration.GetValue<string>("ApiKeyProtection:Key");
+
 var app = builder.Build();
 
 using (var scope = app.Services.CreateScope())
@@ -126,6 +156,44 @@ app.UseMiddleware<ExceptionMiddleware>();
 
 // استخدام ضغط الاستجابة
 app.UseResponseCompression();
+
+if (apiKeyEnabled)
+{
+    app.Use(async (context, next) =>
+    {
+        var path = context.Request.Path.Value ?? string.Empty;
+
+        if (path.StartsWith("/swagger", StringComparison.OrdinalIgnoreCase) ||
+            path.Equals("/health", StringComparison.OrdinalIgnoreCase) ||
+            path.Equals("/", StringComparison.OrdinalIgnoreCase))
+        {
+            await next();
+            return;
+        }
+
+        if (string.IsNullOrEmpty(apiKeyValue))
+        {
+            await next();
+            return;
+        }
+
+        if (!context.Request.Headers.TryGetValue(apiKeyHeaderName, out var extractedApiKey))
+        {
+            context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+            await context.Response.WriteAsync("API key is missing.");
+            return;
+        }
+
+        if (!string.Equals(extractedApiKey, apiKeyValue, StringComparison.Ordinal))
+        {
+            context.Response.StatusCode = StatusCodes.Status403Forbidden;
+            await context.Response.WriteAsync("Invalid API key.");
+            return;
+        }
+
+        await next();
+    });
+}
 
 // تمكين Swagger دائماً (لأغراض الاختبار في الإنتاج)
 app.UseSwagger();
