@@ -1,6 +1,7 @@
 # Sugo Backend API
 
-A full ASP.NET Core Web API backend for the Sugo application (live rooms / social task app).
+A full ASP.NET Core Web API backend for the Sugo application (live rooms / social task app). 
+sugo swagger http://sugobackend.runasp.net/swagger
 
 ## 🚀 Features
 
