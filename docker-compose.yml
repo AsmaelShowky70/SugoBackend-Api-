@@ -18,7 +18,8 @@ services:
       - PORT=${PORT:-5000}
       - ASPNETCORE_URLS=http://*:${PORT:-5000}
       - ConnectionStrings__DefaultConnection=Host=db;Port=5432;Database=sugo;Username=postgres;Password=${DB_PASSWORD:-postgres}
-      - Jwt__Key=${JWT_KEY:-aK8#mP9@xL2$vQ1%rT4&sW5!nE6^jH7*CHANGE_ME}
+      - Jwt__Key=${JWT_KEY:-Zx8T7vR4pQ2lK9mC1bN5aS6yH3eF0wG2}
+      - ApiKeyProtection__Key=${PROJECT_KEY:-K8Pm4YzQ1wR9sD7L3cV5nB2xH6tF0gJ8kM4pS9uE1aC7}
       - Jwt__Issuer=SugoBackend
       - Jwt__Audience=SugoFrontend
       - Jwt__ExpiryInMinutes=60

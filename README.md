@@ -125,9 +125,9 @@ The deployed API (for frontend/mobile use) is available at:
 ## 📤 Testing with Postman
 
 1. Import the provided `SugoBackend.postman_collection.json` into Postman
-2. Ensure the collection variable `{{baseUrl}}` is set to:
-   - Local: `http://localhost:5000`
-   - Production: `http://sugobackend.runasp.net`
+2. Ensure the collection variable `{{baseUrl}}` is set to the appropriate environment:
+   - Default: `http://sugobackend.runasp.net` (production)
+   - Local: `http://localhost:5000` if running the API locally
 3. Execute the `Login` request to get a JWT token
 4. The Postman script will automatically set:
    - `{{token}}`, `{{userId}}`, `{{username}}`, `{{email}}`

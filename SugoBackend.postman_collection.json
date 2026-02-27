@@ -5,6 +5,69 @@
     "description": "Complete API collection for Sugo Backend with Auth, Users, Rooms, Wallet, Gifts, Matching, Moderation, and Admin endpoints.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://sugobackend.runasp.net",
+      "type": "string"
+    },
+    {
+      "key": "projectKey",
+      "value": "K8Pm4YzQ1wR9sD7L3cV5nB2xH6tF0gJ8kM4pS9uE1aC7",
+      "type": "string"
+    },
+    {
+      "key": "token",
+      "value": "Zx8T7vR4pQ2lK9mC1bN5aS6yH3eF0wG2",
+      "type": "string"
+    },
+    {
+      "key": "userId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "username",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "email",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "roomId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "targetUserId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "reportId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "giftId",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "exec": [
+          "// ensure API key header is present on every request",
+          "pm.request.headers.upsert({ key: 'X-Project-Key', value: pm.collectionVariables.get('projectKey') });"
+        ]
+      }
+    }
+  ],
   "auth": {
     "type": "bearer",
     "bearer": [
@@ -950,53 +1013,6 @@
           "response": []
         }
       ]
-    }
-  ],
-  "variable": [
-    {
-      "key": "baseUrl",
-      "value": "http://sugobackend.runasp.net",
-      "type": "string"
-    },
-    {
-      "key": "token",
-      "value": "",
-      "type": "string"
-    },
-    {
-      "key": "userId",
-      "value": "",
-      "type": "string"
-    },
-    {
-      "key": "roomId",
-      "value": "",
-      "type": "string"
-    },
-    {
-      "key": "targetUserId",
-      "value": "",
-      "type": "string"
-    },
-    {
-      "key": "reportId",
-      "value": "",
-      "type": "string"
-    },
-    {
-      "key": "username",
-      "value": "",
-      "type": "string"
-    },
-    {
-      "key": "email",
-      "value": "",
-      "type": "string"
-    },
-    {
-      "key": "giftId",
-      "value": "",
-      "type": "string"
     }
   ]
 }
