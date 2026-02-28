@@ -104,7 +104,8 @@ public class AuthController : ControllerBase
             UserId = user.Id,
             Username = user.Username,
             Email = user.Email,
-            Token = token
+            Token = token,
+            ProfilePicture = user.ProfilePicture
         };
 
         return Ok(response);
@@ -231,7 +232,8 @@ public class AuthController : ControllerBase
             UserId = user.Id,
             Username = user.Username,
             Email = user.Email,
-            Token = token
+            Token = token,
+            ProfilePicture = user.ProfilePicture
         };
 
         return Ok(response);
