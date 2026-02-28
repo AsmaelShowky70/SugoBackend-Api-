@@ -13,6 +13,11 @@ public class User
     public bool IsAdmin { get; set; }
     public bool IsBanned { get; set; } = false;
 
+    // Social Login Fields
+    public string? SocialProvider { get; set; } // "google", "facebook"
+    public string? SocialId { get; set; } // The ID from the social provider
+    public string? ProfilePicture { get; set; } // URL to profile picture
+
     #region Navigation Properties
     public ICollection<Room> CreatedRooms { get; set; } = new List<Room>();
     public Wallet? Wallet { get; set; }

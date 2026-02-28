@@ -4,6 +4,9 @@ using Microsoft.AspNetCore.Mvc;
 using SugoBackend.Data;
 using SugoBackend.DTOs;
 using SugoBackend.Models;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
+using System.IO;
 
 namespace SugoBackend.Controllers;
 
@@ -16,10 +19,12 @@ namespace SugoBackend.Controllers;
 public class RoomsController : ControllerBase
 {
     private readonly AppDbContext _context;
+    private readonly IWebHostEnvironment _environment;
 
-    public RoomsController(AppDbContext context)
+    public RoomsController(AppDbContext context, IWebHostEnvironment environment)
     {
         _context = context;
+        _environment = environment;
     }
 
     #region Public Methods
@@ -60,7 +65,8 @@ public class RoomsController : ControllerBase
             Id = room.Id,
             Name = room.Name,
             CreatedByUserId = room.CreatedByUserId,
-            CreatedAt = room.CreatedAt
+            CreatedAt = room.CreatedAt,
+            RoomPicture = room.RoomPicture
         };
 
         return CreatedAtAction(nameof(GetRoomById), new { id = room.Id }, createdRoomDto);
@@ -79,7 +85,8 @@ public class RoomsController : ControllerBase
                 Id = r.Id,
                 Name = r.Name,
                 CreatedByUserId = r.CreatedByUserId,
-                CreatedAt = r.CreatedAt
+                CreatedAt = r.CreatedAt,
+                RoomPicture = r.RoomPicture
             })
             .ToList();
 
@@ -110,6 +117,73 @@ public class RoomsController : ControllerBase
         };
 
         return Ok(roomDto);
+    }
+
+    /// <summary>
+    /// Upload room picture for a specific room
+    /// </summary>
+    /// <param name="roomId">Room ID</param>
+    /// <param name="file">Image file</param>
+    /// <returns>Uploaded image URL</returns>
+    [HttpPost("{roomId}/upload-picture")]
+    public async Task<IActionResult> UploadRoomPicture(int roomId, IFormFile file)
+    {
+        if (file == null || file.Length == 0)
+        {
+            return BadRequest(new { message = "No file uploaded" });
+        }
+
+        // Validate file extension
+        var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".gif" };
+        var extension = Path.GetExtension(file.FileName).ToLower();
+        if (!allowedExtensions.Contains(extension))
+        {
+            return BadRequest(new { message = "Invalid file type. Only JPG, PNG, and GIF are allowed." });
+        }
+
+        // Get room and verify ownership
+        var room = await _context.Rooms.FindAsync(roomId);
+        if (room == null)
+        {
+            return NotFound(new { message = "Room not found" });
+        }
+
+        var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (string.IsNullOrEmpty(userIdStr) || !int.TryParse(userIdStr, out var userId))
+        {
+            return Unauthorized(new { message = "Invalid user context" });
+        }
+
+        if (room.CreatedByUserId != userId)
+        {
+            return Forbid();
+        }
+
+        // Create uploads folder if it doesn't exist
+        var uploadsFolder = Path.Combine(_environment.WebRootPath, "uploads", "rooms");
+        if (!Directory.Exists(uploadsFolder))
+        {
+            Directory.CreateDirectory(uploadsFolder);
+        }
+
+        // Generate unique filename
+        var fileName = $"room_{roomId}_{DateTime.UtcNow.Ticks}{extension}";
+        var filePath = Path.Combine(uploadsFolder, fileName);
+
+        // Save file
+        using (var stream = new FileStream(filePath, FileMode.Create))
+        {
+            await file.CopyToAsync(stream);
+        }
+
+        // Update room picture URL
+        var baseUrl = $"{Request.Scheme}://{Request.Host}{Request.PathBase}";
+        var imageUrl = $"{baseUrl}/uploads/rooms/{fileName}";
+
+        room.RoomPicture = imageUrl;
+        await _context.SaveChangesAsync();
+
+        return Ok(new { imageUrl });
     }
 
     #endregion

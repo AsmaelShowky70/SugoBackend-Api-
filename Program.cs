@@ -157,6 +157,9 @@ app.UseMiddleware<ExceptionMiddleware>();
 // استخدام ضغط الاستجابة
 app.UseResponseCompression();
 
+// تمكين الملفات الثابتة لرفع الصور
+app.UseStaticFiles();
+
 if (apiKeyEnabled)
 {
     app.Use(async (context, next) =>

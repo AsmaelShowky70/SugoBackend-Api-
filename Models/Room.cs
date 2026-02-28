@@ -9,6 +9,7 @@ public class Room
     public required string Name { get; set; }
     public int CreatedByUserId { get; set; }
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public string? RoomPicture { get; set; } // URL to room picture
 
     #region Navigation Properties
     public User? CreatedByUser { get; set; }

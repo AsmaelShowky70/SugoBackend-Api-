@@ -9,4 +9,5 @@ public class RoomDto
     public required string Name { get; set; }
     public int CreatedByUserId { get; set; }
     public DateTime CreatedAt { get; set; }
+    public string? RoomPicture { get; set; }
 }
