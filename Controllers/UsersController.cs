@@ -92,11 +92,11 @@ public class UsersController : ControllerBase
         }
 
         // Validate file extension
-        var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".gif" };
+        var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".gif", ".heic", ".heif", ".webp" };
         var extension = Path.GetExtension(file.FileName).ToLower();
         if (!allowedExtensions.Contains(extension))
         {
-            return BadRequest(new { message = "Invalid file type. Only JPG, PNG, and GIF are allowed." });
+            return BadRequest(new { message = "Invalid file type. Only JPG, PNG, GIF, HEIC/HEIF or WEBP are allowed." });
         }
 
         // Get current user
