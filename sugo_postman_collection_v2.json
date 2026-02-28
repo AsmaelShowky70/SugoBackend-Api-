@@ -1,0 +1,927 @@
+{
+    "info": {
+        "name": "SugoBackend API",
+        "_postman_id": "b7f8e9d0-c1a2-3456-7890-abcdef123456",
+        "description": "Postman collection generated from the API controllers. Variables are defined for baseUrl, projectKey and authToken.",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    },
+    "variable": [
+        {
+            "key": "baseUrl",
+            "value": "http://sugobackend.runasp.net/api",
+            "type": "string"
+        },
+        {
+            "key": "projectKey",
+            "value": "K8Pm4YzQ1wR9sD7L3cV5nB2xH6tF0gJ8kM4pS9uE1aC7",
+            "type": "string"
+        },
+        {
+            "key": "authToken",
+            "value": "Zx8T7vR4pQ2lK9mC1bN5aS6yH3eF0wG2",
+            "type": "string"
+        }
+    ],
+    "item": [
+        {
+            "name": "Auth",
+            "item": [
+                {
+                    "name": "Register",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "X-Project-Key",
+                                "value": "{{projectKey}}"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"username\": \"testuser\",\n  \"email\": \"user@example.com\",\n  \"password\": \"Password123\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/Auth/register",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "Auth",
+                                "register"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Login",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "if (pm.response.code === 200) {",
+                                    "  var json = pm.response.json();",
+                                    "  pm.environment.set('authToken', json.token || json.Token || '');",
+                                    "}"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "X-Project-Key",
+                                "value": "{{projectKey}}"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"email\": \"user@example.com\",\n  \"password\": \"Password123\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/Auth/login",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "Auth",
+                                "login"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Social Login",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "X-Project-Key",
+                                "value": "{{projectKey}}"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"provider\": \"google\",\n  \"accessToken\": \"<token>\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/Auth/social-login",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "Auth",
+                                "social-login"
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Users",
+            "item": [
+                {
+                    "name": "Get Profile",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{authToken}}"
+                            },
+                            {
+                                "key": "X-Project-Key",
+                                "value": "{{projectKey}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/Users/profile/:id",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "Users",
+                                "profile",
+                                ":id"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "List Users",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{authToken}}"
+                            },
+                            {
+                                "key": "X-Project-Key",
+                                "value": "{{projectKey}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/Users/list",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "Users",
+                                "list"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Upload Profile Picture",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{authToken}}"
+                            },
+                            {
+                                "key": "X-Project-Key",
+                                "value": "{{projectKey}}"
+                            }
+                        ],
+                        "body": {
+                            "mode": "formdata",
+                            "formdata": [
+                                {
+                                    "key": "file",
+                                    "type": "file"
+                                }
+                            ]
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/Users/upload-picture",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "Users",
+                                "upload-picture"
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Moderation",
+            "item": [
+                {
+                    "name": "Submit Report",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{authToken}}"
+                            },
+                            {
+                                "key": "X-Project-Key",
+                                "value": "{{projectKey}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"targetUserId\": 123,\n  \"reason\": \"Spam\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/Moderation/report",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "Moderation",
+                                "report"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "My Reports",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{authToken}}"
+                            },
+                            {
+                                "key": "X-Project-Key",
+                                "value": "{{projectKey}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/Moderation/my-reports",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "Moderation",
+                                "my-reports"
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Messages",
+            "item": [
+                {
+                    "name": "Send Message",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{authToken}}"
+                            },
+                            {
+                                "key": "X-Project-Key",
+                                "value": "{{projectKey}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"recipientId\": 456,\n  \"content\": \"Hello!\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/Messages/send",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "Messages",
+                                "send"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Get Conversation",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{authToken}}"
+                            },
+                            {
+                                "key": "X-Project-Key",
+                                "value": "{{projectKey}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/Messages/conversation/:userId",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "Messages",
+                                "conversation",
+                                ":userId"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "List Conversations",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{authToken}}"
+                            },
+                            {
+                                "key": "X-Project-Key",
+                                "value": "{{projectKey}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/Messages/conversations",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "Messages",
+                                "conversations"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Mark Message Read",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{authToken}}"
+                            },
+                            {
+                                "key": "X-Project-Key",
+                                "value": "{{projectKey}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/Messages/:messageId/read",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "Messages",
+                                ":messageId",
+                                "read"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Delete Message",
+                    "request": {
+                        "method": "DELETE",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{authToken}}"
+                            },
+                            {
+                                "key": "X-Project-Key",
+                                "value": "{{projectKey}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/Messages/:messageId",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "Messages",
+                                ":messageId"
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Matching",
+            "item": [
+                {
+                    "name": "Recommend Room",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{authToken}}"
+                            },
+                            {
+                                "key": "X-Project-Key",
+                                "value": "{{projectKey}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/Matching/recommend-room",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "Matching",
+                                "recommend-room"
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Gifts",
+            "item": [
+                {
+                    "name": "Get Gifts",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{authToken}}"
+                            },
+                            {
+                                "key": "X-Project-Key",
+                                "value": "{{projectKey}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/Gifts",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "Gifts"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Send Gift",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{authToken}}"
+                            },
+                            {
+                                "key": "X-Project-Key",
+                                "value": "{{projectKey}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"recipientUserId\": 456,\n  \"giftId\": 1\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/Gifts/send",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "Gifts",
+                                "send"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Room Gift Ranking",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{authToken}}"
+                            },
+                            {
+                                "key": "X-Project-Key",
+                                "value": "{{projectKey}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/Gifts/ranking/room/:roomId",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "Gifts",
+                                "ranking",
+                                "room",
+                                ":roomId"
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Rooms",
+            "item": [
+                {
+                    "name": "Create Room",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{authToken}}"
+                            },
+                            {
+                                "key": "X-Project-Key",
+                                "value": "{{projectKey}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"name\": \"New Room\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/Rooms/create",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "Rooms",
+                                "create"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "List Rooms",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{authToken}}"
+                            },
+                            {
+                                "key": "X-Project-Key",
+                                "value": "{{projectKey}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/Rooms/list",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "Rooms",
+                                "list"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Get Room",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{authToken}}"
+                            },
+                            {
+                                "key": "X-Project-Key",
+                                "value": "{{projectKey}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/Rooms/:id",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "Rooms",
+                                ":id"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Upload Room Picture",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{authToken}}"
+                            },
+                            {
+                                "key": "X-Project-Key",
+                                "value": "{{projectKey}}"
+                            }
+                        ],
+                        "body": {
+                            "mode": "formdata",
+                            "formdata": [
+                                {
+                                    "key": "file",
+                                    "type": "file"
+                                }
+                            ]
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/Rooms/:roomId/upload-picture",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "Rooms",
+                                ":roomId",
+                                "upload-picture"
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Wallet",
+            "item": [
+                {
+                    "name": "Get Wallet",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{authToken}}"
+                            },
+                            {
+                                "key": "X-Project-Key",
+                                "value": "{{projectKey}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/Wallet",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "Wallet"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Top Up Wallet",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{authToken}}"
+                            },
+                            {
+                                "key": "X-Project-Key",
+                                "value": "{{projectKey}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"amount\": 50.0\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/Wallet/topup",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "Wallet",
+                                "topup"
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Admin",
+            "item": [
+                {
+                    "name": "List Reports",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{authToken}}"
+                            },
+                            {
+                                "key": "X-Project-Key",
+                                "value": "{{projectKey}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/Admin/reports",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "Admin",
+                                "reports"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Update Report Status",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{authToken}}"
+                            },
+                            {
+                                "key": "X-Project-Key",
+                                "value": "{{projectKey}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/Admin/reports/:id/update-status?status=resolved",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "Admin",
+                                "reports",
+                                ":id",
+                                "update-status"
+                            ],
+                            "query": [
+                                {
+                                    "key": "status",
+                                    "value": "resolved"
+                                }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Get All Users",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{authToken}}"
+                            },
+                            {
+                                "key": "X-Project-Key",
+                                "value": "{{projectKey}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/Admin/users",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "Admin",
+                                "users"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Ban User",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{authToken}}"
+                            },
+                            {
+                                "key": "X-Project-Key",
+                                "value": "{{projectKey}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/Admin/users/:id/ban",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "Admin",
+                                "users",
+                                ":id",
+                                "ban"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Unban User",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{authToken}}"
+                            },
+                            {
+                                "key": "X-Project-Key",
+                                "value": "{{projectKey}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/Admin/users/:id/unban",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "Admin",
+                                "users",
+                                ":id",
+                                "unban"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Delete User",
+                    "request": {
+                        "method": "DELETE",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{authToken}}"
+                            },
+                            {
+                                "key": "X-Project-Key",
+                                "value": "{{projectKey}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/Admin/users/:id",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "Admin",
+                                "users",
+                                ":id"
+                            ]
+                        }
+                    }
+                }
+            ]
+        }
+    ]
+}
